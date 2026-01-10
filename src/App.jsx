@@ -2,14 +2,14 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import EmailAccess from './EmailAccess';
-import Cavallini from './Cavallini';
+import Trading from './Trading_Strategy';
 
 function App() {
   return (
-    <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/Cavallini' : '/Cavallini'}>
+    <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/Trading_Strategy' : '/Trading_Strategy'}>
       <Routes>
         <Route path="/" element={<EmailAccess />} />
-        <Route path="/performance" element={<Cavallini />} />
+        <Route path="/performance" element={<Trading />} />
       </Routes>
     </BrowserRouter>
   );

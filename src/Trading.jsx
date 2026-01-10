@@ -16,7 +16,7 @@ import {
 
 
 
-const Cavallini = () => {
+const Trading = () => {
   // Get Sharpe, Sortino, and Correlation to S&P directly from Helpers global state
   // State for each dataset
   const [returnsData, setReturnsData] = useState({ dates: [], returns: [] });
@@ -290,4 +290,4 @@ const Cavallini = () => {
   );
 };
 
-export default Cavallini;
+export default Trading;

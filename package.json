@@ -1,9 +1,9 @@
 {
-  "name": "cavallini",
+  "name": "luxsire",
   "private": false,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://LuxSire.github.io/Cavallini/",
+  "homepage": "https://LuxSire.github.io/Trading_Strategy/",
   "scripts": {
     "start": "vite --open",
     "dev": "vite",
