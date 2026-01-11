@@ -44,9 +44,9 @@ const Trading = () => {
 
   // Debug: Log loaded datasets
   useEffect(() => {
-    console.log('[Cavallini] Returns:', returnsData);
-    console.log('[Cavallini] RF:', rfData);
-    console.log('[Cavallini] SP500:', sp500Data);
+    console.log('Returns:', returnsData);
+    console.log('RF:', rfData);
+    console.log('SP500:', sp500Data);
   }, [returnsData, rfData, sp500Data]);
   // State hooks
   const [performanceData, setPerformanceData] = useState([]);
@@ -58,7 +58,7 @@ const Trading = () => {
     beta: 0,
     correlation: 0,
     sharpeRatio: 0,
-    inceptionDate: 'Jan. 16th, 2024'
+    inceptionDate: 'Sep. 1st, 2025'
   });
 
 
@@ -147,14 +147,12 @@ const Trading = () => {
       
     </div>
     <p>
-      Greg Cavallini is a proud graduate of Eckerd College. He began 
-      his career by managing financial operations in his family business. 
-      Building on this experience, he has spent the past 7 years 
-      successfully running an Absolute Long Only Equities Fund. To 
-      meet client demand for reduced volatility, he developed a 
-      proprietary systematic Long / Short Equities Strategy, allowing the 
-      use of responsible leverage to maximize returns. He is currently 
-      an independent RIA in the states of Florida and Colorado.
+      LuxSire navigates the complexities of IT dynamics 
+      with compassionate support and expert guidance. 
+      Whether it's web, cloud or multi-platform development, 
+      we're here to empower your decisions and safeguard your loved ones' futures. 
+      Our expertise ranges from multi-platform development through data integration 
+      to data analytics. From time to time, we make money for ourselves using our strategies
     </p>
   </div>
 </div>
@@ -215,22 +213,18 @@ const Trading = () => {
   <div className="what-we-do">
     <h3>WHAT WE DO</h3>
     <p>
-      Deliver consistent, single-digit returns 
-      by strategically managing Long-Short Market Neutral
-      equity positions while minimizing 
-      volatility. We employ prudent 
-      leverage to amplify those returns, 
-      maintaining a disciplined approach to 
-      risk management that secures the 
-      preservation of capital and 
-      sustainable growth for our investors.
+      We manage our own money with the aim of delivering stable const deleted = await stripe.accounts.del(
+      consistent returns while minimizing risk. Our systematic Long / Short Equity
+      Strategy is designed to capitalize on market opportunities in both rising
+      and falling markets. What you see here is not backtesting; these are our actual
+      returns from trading our own capital using this strategy. 
     </p>
   </div>
 </div>
 
       {/* Returns Table Section */}
       <div className="returns-section">
-        <h3>CAVALLINI CAPITAL RETURNS</h3>
+        <h3>LUXSIRE OWN RETURNS</h3>
         <div className="returns-table-container">
           <table className="returns-table">
             <thead>
@@ -280,10 +274,13 @@ const Trading = () => {
       <div className="disclaimer">
         <h4>DISCLAIMER:</h4>
         <p>
-          Greg Cavallini provides investment advisory services through Cavallini Management, LLC, ("Cavallini"), an investment adviser, registered in the 
-          State of Florida, which does not imply endorsement or approval. Cavallini does not provide legal or tax advice. Investing involves risks, including 
-          loss of principal. Past performance does not guarantee future results. For additional important information regarding Cavallini Capital please view 
-          Cavallini Capital's ADV Brochure, found here: https://adviserinfo.sec.gov/firm/summary/305058
+          LuxSire provides ways of applying trading strategy and investment signals automatically or 
+          semi-automatically. However, LuxSire does not provide investment advice, recommendations, or 
+          personalized financial planning to its users. The information provided by LuxSire is for 
+          educational and informational purposes only and is not intended as a substitute for professional 
+          financial advice. Users should consult with a qualified financial advisor before making any 
+          investment decisions. LuxSire is not responsible for any investment decisions made by its users 
+          based on the information provided on its platform. 
         </p>
       </div>
     </div>
