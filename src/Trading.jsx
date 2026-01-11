@@ -5,6 +5,7 @@ import {
   sanitizeNumber,
   calculateMonthlyVar,
   calculateDailyVar,
+  stdDevDailyReturns,
   calculateSharpeRatio,
   calculateSortinoRatio,
   calculateCorrelation,
@@ -55,6 +56,7 @@ const Trading = () => {
   const [monthlyReturns, setMonthlyReturns] = useState([]);
   const [fundStats, setFundStats] = useState({
     monthlyVar: 0,
+    stdDevDailyReturns: 0,
     beta: 0,
     correlation: 0,
     sharpeRatio: 0,
@@ -116,6 +118,7 @@ const Trading = () => {
 
     const stats = {
       dailyVar: calculateDailyVar(dailyReturns),
+      stdDevDailyReturns: stdDevDailyReturns(dailyReturns),
       monthlyVar: calculateMonthlyVar(monthlyReturns.map(r => r.return)),
       bestMonth: bestMonth ? `${bestMonth.period}: ${bestMonth.return.toFixed(2)}%` : 'N/A',
       worstMonth: worstMonth ? `${worstMonth.period}: ${worstMonth.return.toFixed(2)}%` : 'N/A',
@@ -131,7 +134,7 @@ const Trading = () => {
   const sharpeRatio = calculateSharpeRatio(monthlyReturns,sp500Data,rfData);
   const sortinoRatio = calculateSortinoRatio(monthlyReturns,sp500Data);
   const correlationSP500 = calculateCorrelation(monthlyReturns, sp500Data);
-
+  
   return (
     <div className="cavallini-capital">
       {/* Header Section */}
@@ -198,13 +201,10 @@ const Trading = () => {
         <span className="stat-label">Correlation to S&amp;P:</span>
         <span className="stat-value">{correlationSP500}</span>
       </div>
+
       <div className="stat-item daily-var">
         <span className="stat-label">Daily VAR:</span>
-        <span className="stat-value">{Number(fundStats.dailyVar).toFixed(2)}%</span>
-      </div>
-      <div className="stat-item monthly-var">
-        <span className="stat-label">Monthly VAR:</span>
-        <span className="stat-value">{Number(fundStats.monthlyVar).toFixed(2)}%</span>
+        <span className="stat-value">{Number(100*fundStats.dailyVar).toFixed(2)}%</span>
       </div>
       </div>
   </div>

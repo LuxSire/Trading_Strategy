@@ -1,3 +1,15 @@
+// Returns the standard deviation (sqrt of variance) of daily returns
+export const stdDevDailyReturns = (daily) => {
+  if (!Array.isArray(daily) || daily.length === 0) return 0;
+  // Filter out non-numeric and NaN values
+  const clean = daily.map(Number).filter(v => typeof v === 'number' && !isNaN(v));
+  if (clean.length === 0) return 0;
+  const mean = clean.reduce((a, b) => a + b, 0) / clean.length;
+  const variance = clean.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / clean.length;
+  // Annualize: multiply by sqrt(252) for trading days
+  return Math.sqrt(variance) * Math.sqrt(252);
+};
+
 // Calculate correlation between monthly returns of Returns.csv and SP500.csv
 export const calculateCorrelation = (monthlyReturnsArr = null, sp500Data = null) => {
   // Use passed monthlyReturnsArr if available, otherwise calculate
@@ -259,13 +271,11 @@ export const calculateMonthlyVar = (monthly, confidenceLevel = 0.95) => {
 };
 
 export const calculateDailyVar = (daily, confidenceLevel = 0.95) => {
-  
+  if (!daily || !daily.length) return '0';
   const sorted = [...daily].sort((a, b) => a - b);
-  const index = Math.floor((1 - confidenceLevel) * sorted.length);
-  const varValue = sorted[index];
-  const result = varValue?.toFixed(2) || '0';
-  
-  return result;
+  const index = Math.ceil((1 - confidenceLevel) * sorted.length) - 1;
+  const varValue = sorted[Math.max(0, index)];
+  return varValue?.toFixed(4) || '0';
 };
 
 // Sharpe ratio using global Returns and RF

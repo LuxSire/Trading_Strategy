@@ -6,7 +6,7 @@ import Trading from './Trading';
 
 function App() {
   return (
-    <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/LuxSire' : '/LuxSire'}>
+    <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/Trading_Strategy' : '/Trading_Strategy/'}>
       <Routes>
         <Route path="/" element={<Trading />} />
         <Route path="/performance" element={<Trading />} />
