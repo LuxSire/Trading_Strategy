@@ -60,9 +60,9 @@ export const calculateCorrelation = (monthlyReturnsArr = null, sp500Data = null)
   console.log('[Helpers.calculateCorrelation] correlation:', correlation);
   return correlation.toFixed(2);
 };
-// Sortino ratio using global Returns and RF
-export const calculateSortinoRatio = (monthlyReturnsArr = null, rfReturnsArr = null) => {
-  if (!monthlyReturnsArr) {
+// Sortino ratio using daily returns with zero risk-free rate
+export const calculateSortinoRatio = (dailyReturnsArr = null) => {
+  if (!dailyReturnsArr || !Array.isArray(dailyReturnsArr) || dailyReturnsArr.length === 0) {
     if (!Returns.dates.length || !Returns.returns.length) {
       loadCSV(
         dates => Returns.dates = dates,
@@ -71,33 +71,22 @@ export const calculateSortinoRatio = (monthlyReturnsArr = null, rfReturnsArr = n
       );
       return 'Loading Returns...';
     }
-    monthlyReturnsArr = calculateMonthlyReturns(Returns.dates, Returns.returns);
+    dailyReturnsArr = Returns.returns;
   }
-  let rfAvg;
-  if (rfReturnsArr && rfReturnsArr.length) {
-    rfAvg = rfReturnsArr.reduce((a, b) => a + b, 0) / rfReturnsArr.length / 12;
-  } else {
-    if (!RF.returns.length) {
-      loadCSV(
-        dates => RF.dates = dates,
-        returns => RF.returns = returns,
-        '/RF.csv'
-      );
-      return 'Loading RF...';
-    }
-    rfAvg = RF.returns.reduce((a, b) => a + b, 0) / RF.returns.length / 12;
-  }
-  const monthly = monthlyReturnsArr.map(r => r.return);
-  if (!monthly.length) return '0';
-  const meanMonthly = monthly.reduce((a, b) => a + b, 0) / monthly.length;
-  const excessReturn = meanMonthly - rfAvg;
-  // Downside deviation (volatility of returns below rfAvg)
-  const downsideReturns = monthly.filter(r => r < rfAvg);
+
+  const rfRate = 0; // Zero risk-free rate
+  const meanDaily = dailyReturnsArr.reduce((a, b) => a + b, 0) / dailyReturnsArr.length;
+  const excessReturn = meanDaily - rfRate;
+
+  // Downside deviation (volatility of returns below rfRate)
+  const downsideReturns = dailyReturnsArr.filter(r => r < rfRate);
   const downsideDeviation = Math.sqrt(
-    downsideReturns.reduce((acc, r) => acc + Math.pow(r - rfAvg, 2), 0) / (downsideReturns.length || 1)
+    downsideReturns.reduce((acc, r) => acc + Math.pow(r - rfRate, 2), 0) / (downsideReturns.length || 1)
   );
-  const annualizedExcessReturn = excessReturn * 12;
-  const annualizedDownsideDev = downsideDeviation * Math.sqrt(12);
+
+  // Annualize: multiply by sqrt(252) for trading days and by 252 for returns
+  const annualizedExcessReturn = excessReturn * 252;
+  const annualizedDownsideDev = downsideDeviation * Math.sqrt(252);
   const result = (annualizedDownsideDev === 0 ? 0 : (annualizedExcessReturn / annualizedDownsideDev)).toFixed(2);
   
   return result;

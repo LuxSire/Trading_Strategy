@@ -145,7 +145,7 @@ const Trading = () => {
 
   // Calculate Sharpe, Sortino, and Correlation to S&P using monthlyReturns
   const sharpeRatio = calculateSharpeRatio(monthlyReturns,sp500Data,rfData);
-  const sortinoRatio = calculateSortinoRatio(monthlyReturns,sp500Data);
+  const sortinoRatio = calculateSortinoRatio(dailyReturns);
   const correlationSP500 = calculateCorrelation(monthlyReturns, sp500Data);
   
   // Prepare chart data
@@ -233,9 +233,8 @@ const Trading = () => {
   <div className="what-we-do">
     <h3>WHAT WE DO</h3>
     <p>
-      We manage our own money with the aim of delivering stable const deleted = await stripe.accounts.del(
-      consistent returns while minimizing risk. Our systematic Long / Short Equity
-      Strategy is designed to capitalize on market opportunities in both rising
+      We manage our own money with the aim of delivering stable consistent returns while minimizing risk. 
+      Our systematic Long / Short Equity Strategy is designed to capitalize on market opportunities in both rising
       and falling markets. What you see here is not backtesting; these are our actual
       returns from trading our own capital using this strategy. 
     </p>
