@@ -1,6 +1,7 @@
 import  { useState, useEffect } from 'react';
 import './Style.css';
 import BrandLogo from './BrandLogo';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import {
   sanitizeNumber,
   calculateMonthlyVar,
@@ -54,6 +55,7 @@ const Trading = () => {
   const [dailyReturns, setDailyReturns] = useState([]);
   const [dates, setDates] = useState([]);
   const [monthlyReturns, setMonthlyReturns] = useState([]);
+  const [cumulativeReturns, setCumulativeReturns] = useState([]);
   const [fundStats, setFundStats] = useState({
     monthlyVar: 0,
     stdDevDailyReturns: 0,
@@ -83,9 +85,20 @@ const Trading = () => {
     console.log('[effect dates/dailyReturns] Sample dates:', dates.slice(0,5));
     console.log('[effect dates/dailyReturns] Sample dailyReturns:', dailyReturns.slice(0,5));
     console.log('[effect dates/dailyReturns] Daily Returns (full):', dailyReturns);
+    
+    // Calculate monthly returns
     const monthly = calculateMonthlyReturns(dates, dailyReturns);
     console.log('[effect dates/dailyReturns] Calculated monthly returns:', monthly);
     setMonthlyReturns(monthly);
+    
+    // Calculate cumulative returns
+    let cumulative = 1;
+    const cumulativeArray = dailyReturns.map(dailyReturn => {
+      cumulative *= (1 + dailyReturn );
+      return ((cumulative - 1) ); // Convert back to percentage
+    });
+    console.log('[effect dates/dailyReturns] Calculated cumulative returns:', cumulativeArray.slice(0,5));
+    setCumulativeReturns(cumulativeArray);
   }, [dates, dailyReturns]);
 
   useEffect(() => {
@@ -135,8 +148,15 @@ const Trading = () => {
   const sortinoRatio = calculateSortinoRatio(monthlyReturns,sp500Data);
   const correlationSP500 = calculateCorrelation(monthlyReturns, sp500Data);
   
+  // Prepare chart data
+  const chartData = returnsData.dates.map((date, index) => ({
+    date,
+    return: returnsData.returns[index],
+    cumulative: cumulativeReturns[index] || 0
+  }));
+
   return (
-    <div className="cavallini-capital">
+    <div className="LuxSire-capital">
       {/* Header Section */}
       <div className="header-section">
         <div className="brand-container">
@@ -267,6 +287,92 @@ const Trading = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Cumulative Returns Chart Section */}
+      <div className="returns-section">
+        <h3>CUMULATIVE RETURNS CHART</h3>
+        <div style={{ width: '100%', height: '400px', marginTop: '20px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#ccc"
+                tick={{ fill: '#ccc' }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return `${date.getMonth() + 1}/${date.getDate()}`;
+                }}
+              />
+              <YAxis 
+                stroke="#ccc"
+                tick={{ fill: '#ccc' }}
+                tickFormatter={(value) => `${(value * 100).toFixed(2)}%`}
+              />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
+                labelStyle={{ color: '#ccc' }}
+                formatter={(value) => [`${(value * 100).toFixed(4)}%`, 'Cumulative Return']}
+              />
+              <Legend wrapperStyle={{ color: '#ccc' }} />
+              <Line 
+                type="monotone" 
+                dataKey="cumulative" 
+                stroke="#82ca9d" 
+                dot={false}
+                strokeWidth={2}
+                name="Cumulative Returns (%)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Returns Chart Section */}
+      <div className="returns-section">
+        <h3>DAILY RETURNS CHART</h3>
+        <div style={{ width: '100%', height: '400px', marginTop: '20px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#ccc"
+                tick={{ fill: '#ccc' }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return `${date.getMonth() + 1}/${date.getDate()}`;
+                }}
+              />
+              <YAxis 
+                stroke="#ccc"
+                tick={{ fill: '#ccc' }}
+                tickFormatter={(value) => `${(value * 100).toFixed(2)}%`}
+              />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
+                labelStyle={{ color: '#ccc' }}
+                formatter={(value) => [`${(value * 100).toFixed(4)}%`, 'Daily Return']}
+              />
+              <Legend wrapperStyle={{ color: '#ccc' }} />
+              <Bar 
+                dataKey="return" 
+                name="Daily Returns (%)"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.return >= 0 ? '#8884d8' : '#ff4444'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
