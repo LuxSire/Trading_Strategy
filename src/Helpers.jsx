@@ -10,54 +10,20 @@ export const stdDevDailyReturns = (daily) => {
   return Math.sqrt(variance) * Math.sqrt(252);
 };
 
-// Calculate correlation between monthly returns of Returns.csv and SP500.csv
-export const calculateCorrelation = (monthlyReturnsArr = null, sp500Data = null) => {
-  // Use passed monthlyReturnsArr if available, otherwise calculate
-  if (!monthlyReturnsArr) {
-    if (!Returns.dates.length || !Returns.returns.length) {
-      loadCSV(
-        dates => Returns.dates = dates,
-        returns => Returns.returns = returns,
-        '/Returns.csv'
-      );
-      return 'Loading Returns...';
-    }
-    monthlyReturnsArr = calculateMonthlyReturns(Returns.dates, Returns.returns);
-  }
-  let monthlySP500Arr;
-  if (sp500Data && sp500Data.dates && sp500Data.returns) {
-    monthlySP500Arr = sp500Data.dates.map((date, i) => ({ period: date.slice(0,7), return: sp500Data.returns[i] }));
-  } else {
-    if (!SP500.dates.length || !SP500.returns.length) {
-      loadCSV(
-        dates => SP500.dates = dates,
-        returns => SP500.returns = returns,
-        '/SP500.csv'
-      );
-      return 'Loading SP500...';
-    }
-    monthlySP500Arr = SP500.dates.map((date, i) => ({ period: date.slice(0,7), return: SP500.returns[i] }));
-  }
-  console.log('[Helpers.calculateCorrelation] monthlyReturnsArr:', monthlyReturnsArr);
-  console.log('[Helpers.calculateCorrelation] monthlySP500Arr:', monthlySP500Arr);
-  // Map period to return for easy lookup
-  const returnsMap = Object.fromEntries(monthlyReturnsArr.map(r => [r.period, r.return]));
-  const sp500Map = Object.fromEntries(monthlySP500Arr.map(r => [r.period, r.return]));
-  // Build arrays of returns for correlation using the length of the two maps
-  const periods = Object.keys(returnsMap);
-  const x = periods.map(period => returnsMap[period]);
-  const y = periods.map((period, i) => sp500Map[period] !== undefined ? sp500Map[period] : sp500Map[Object.keys(sp500Map)[i]]);
-  console.log('[Helpers.calculateCorrelation] x:', x);
-  console.log('[Helpers.calculateCorrelation] y:', y);
-  // Calculate correlation
-  const n = x.length;
+// Calculate correlation between  returns of Returns.csv and SP500.csv
+// Calculate correlation between two arrays of numbers
+export const calculateCorrelation = (arr1, arr2) => {
+  if (!Array.isArray(arr1) || !Array.isArray(arr2) || arr1.length === 0 || arr2.length === 0) return '0';
+  // Use the shorter length to avoid index errors
+  const n = Math.min(arr1.length, arr2.length);
+  const x = arr1.slice(0, n).map(Number);
+  const y = arr2.slice(0, n).map(Number);
   const meanX = x.reduce((a, b) => a + b, 0) / n;
   const meanY = y.reduce((a, b) => a + b, 0) / n;
   const covXY = x.reduce((acc, xi, i) => acc + (xi - meanX) * (y[i] - meanY), 0) / n;
   const stdX = Math.sqrt(x.reduce((acc, xi) => acc + Math.pow(xi - meanX, 2), 0) / n);
   const stdY = Math.sqrt(y.reduce((acc, yi) => acc + Math.pow(yi - meanY, 2), 0) / n);
   const correlation = stdX && stdY ? (covXY / (stdX * stdY)) : 0;
-  console.log('[Helpers.calculateCorrelation] correlation:', correlation);
   return correlation.toFixed(2);
 };
 // Sortino ratio using daily returns with zero risk-free rate
@@ -235,7 +201,7 @@ export const formatTableData = (monthlyReturnsData) => {
   return Object.values(yearGroups).sort((a,b)=> a.year.localeCompare(b.year));
 };
 // performanceHelpers.jsx
-// Helper functions for Cavallini performance calculations
+// Helper functions for portfolio performance calculations
 
 export const sanitizeNumber = (val) => {
   
@@ -307,7 +273,7 @@ export const calculateSharpeRatio = (monthlyReturnsArr = null, sp500ReturnsArr =
   return result;
 };
 
-// Helper to export Sharpe ratio for Cavallini.jsx
+// Helper to export Sharpe ratio for Trading.jsx
 export const getSharpeRatioWithRF = (monthlyReturns, rfReturns) => {
   // monthlyReturns: array of { period, return }
   // rfReturns: array of numbers (monthly risk-free rates)

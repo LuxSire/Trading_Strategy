@@ -137,7 +137,7 @@ const Trading = () => {
       worstMonth: worstMonth ? `${worstMonth.period}: ${worstMonth.return.toFixed(2)}%` : 'N/A',
       perfSinceInception,
       perfAnnualized,
-      inceptionDate: fundStats.inceptionDate || 'Jan. 16th, 2024'
+      inceptionDate: fundStats.inceptionDate || 'Sep. 1st, 2026'
     };
     console.log('[effect monthlyReturns] Computed fund stats:', stats);
     setFundStats(stats);
@@ -146,7 +146,7 @@ const Trading = () => {
   // Calculate Sharpe, Sortino, and Correlation to S&P using monthlyReturns
   const sharpeRatio = calculateSharpeRatio(monthlyReturns,sp500Data,rfData);
   const sortinoRatio = calculateSortinoRatio(dailyReturns);
-  const correlationSP500 = calculateCorrelation(monthlyReturns, sp500Data);
+  const correlationSP500 = calculateCorrelation(dailyReturns, sp500Data.returns);
   
   // Prepare chart data
   const chartData = returnsData.dates.map((date, index) => ({
@@ -314,15 +314,15 @@ const Trading = () => {
                 tickFormatter={(value) => `${(value * 100).toFixed(2)}%`}
               />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
-                labelStyle={{ color: '#ccc' }}
-                formatter={(value) => [`${(value * 100).toFixed(4)}%`, 'Cumulative Return']}
+                contentStyle={{ backgroundColor: '#c3babaff', border: '1px solid #9c9898ff' }}
+                labelStyle={{ color: '#483d90ff' }}
+                formatter={(value) => [`${(value * 100).toFixed(2)}%`, 'Cumulative Return']}
               />
               <Legend wrapperStyle={{ color: '#ccc' }} />
               <Line 
                 type="monotone" 
                 dataKey="cumulative" 
-                stroke="#82ca9d" 
+                stroke="#098e3cff" 
                 dot={false}
                 strokeWidth={2}
                 name="Cumulative Returns (%)"
@@ -357,9 +357,9 @@ const Trading = () => {
                 tickFormatter={(value) => `${(value * 100).toFixed(2)}%`}
               />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
-                labelStyle={{ color: '#ccc' }}
-                formatter={(value) => [`${(value * 100).toFixed(4)}%`, 'Daily Return']}
+                contentStyle={{ backgroundColor: '#b1aeaeff', border: '1px solid #a8a3a3ff' }}
+                labelStyle={{ color: '#3b2c55ff' }}
+                formatter={(value) => [`${(value * 100).toFixed(2)}%`, 'Daily Return']}
               />
               <Legend wrapperStyle={{ color: '#ccc' }} />
               <Bar 

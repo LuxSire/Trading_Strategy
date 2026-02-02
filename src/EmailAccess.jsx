@@ -25,9 +25,9 @@ const EmailAccess = () => {
 
 
   class ApprovalEmail {
-    static recipient = 'greg@cavallinicapital.com';
+    static recipient = 'info@luxsire.com';
     static subject = 'Access Request';
-  static body = 'Dear Mr Cavallini,\n\nI am interested in your products and would like to request access to your website.';
+  static body = 'Dear LuxSire,\n\nI am interested in your products and would like to request access to your website.';
 
     static getMailtoLink() {
       const subject = encodeURIComponent(ApprovalEmail.subject);
