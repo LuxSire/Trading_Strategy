@@ -176,7 +176,7 @@ const Trading = () => {
       we're here to empower your decisions and safeguard your loved ones' futures. 
       Our expertise ranges from multi-platform development through data integration 
       to data analytics. From time to time, we make money for ourselves using our strategies, particularly "SEESAW": 
-      a systematic long single stock short momentum sell offs vs indices
+      a systematic and diversified long single stock short-term momentum sell offs vs indices
     </p>
   </div>
 </div>
