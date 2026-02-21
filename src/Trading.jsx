@@ -173,10 +173,12 @@ const Trading = () => {
       LuxSire navigates the complexities of IT dynamics 
       with compassionate support and expert guidance. 
       Whether it's web, cloud or multi-platform development, 
-      we're here to empower your decisions and safeguard your loved ones' futures. 
+      we're here to empower your decisions with smart implementations. 
       Our expertise ranges from multi-platform development through data integration 
-      to data analytics. From time to time, we make money for ourselves using our strategies, particularly "SEESAW": 
-      a systematic and diversified long single stock short-term momentum sell offs vs indices
+      to data analytics. 
+      From time to time, we make money for ourselves using our strategies, particularly "SEESAW": 
+      a systematic and diversified long single stock short-term momentum sell offs vs indices. 
+      500 stocks monitored and traded with a 48 hour maximum trade horizon. 
     </p>
   </div>
 </div>
