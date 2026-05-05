@@ -62,7 +62,7 @@ const Trading = () => {
     beta: 0,
     correlation: 0,
     sharpeRatio: 0,
-    inceptionDate: 'Sep. 1st, 2025'
+    inceptionDate: 'April 24th, 2026'
   });
 
 
