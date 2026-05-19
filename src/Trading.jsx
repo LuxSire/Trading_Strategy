@@ -15,6 +15,7 @@ import {
   formatTableData,
   loadCSV
 } from './Helpers';
+import { intlFormatDistanceWithOptions } from 'date-fns/fp';
 
 
 
@@ -124,8 +125,10 @@ const Trading = () => {
       const totalReturn = monthlyReturns.reduce((acc, cur) => acc * (1 + cur.return / 100), 1) - 1;
       perfSinceInception = (totalReturn * 100).toFixed(2) + '%';
       // Annualized return
-      const months = monthlyReturns.length;
-      const annualized = Math.pow(1 + totalReturn, 12 / months) - 1;
+      const inceptionDate = new Date('2026-04-24');
+      const today = new Date();
+      const days = Math.max(1, Math.floor((today - inceptionDate) / (1000 * 60 * 60 * 24)));
+      const annualized = Math.pow(1 + totalReturn, 365 / days) - 1;
       perfAnnualized = (annualized * 100).toFixed(2) + '%';
     }
 
