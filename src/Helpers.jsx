@@ -85,7 +85,7 @@ export const loadCSV = (setDates, setDailyReturns, candidateUrl = '/Returns.csv'
           header: false,
           skipEmptyLines: true,
           complete: (results) => {
-            if (!results.data.length) { console.warn('[loadReturnsCSV] No rows.'); return; }
+            if (!results.data.length) { return; }
             const data = results.data.filter(r => r.some(c => c && c.trim() !== ''));
             let rows = data;
             if (rows.length && (rows[0][0].toLowerCase().includes('date') || rows[0][1].toLowerCase().includes('return') || rows[0][1].toLowerCase().includes('value'))) {
@@ -112,9 +112,7 @@ export const loadCSV = (setDates, setDailyReturns, candidateUrl = '/Returns.csv'
               parsedDates.push(iso);
               parsedDailyReturns.push(value);
             });
-            if (euDateConvertedCount) console.log(`[loadReturnsCSV] Converted ${euDateConvertedCount} EU date formats.`);
             const nanCount = parsedDailyReturns.filter(v=>isNaN(v)).length;
-            if (nanCount) console.warn(`[loadReturnsCSV] NaN daily returns count: ${nanCount}`);
             setDates(parsedDates);
             setDailyReturns(parsedDailyReturns);
           },
@@ -154,7 +152,7 @@ loadCSV(
 
 export const parseInlineFallback = (setDates, setDailyReturns) => {
   const inlineCsv = `Date,Start Balance,Gain / Loss,End Balance ,Basis Points ,Daily Gain / Loss\n2024-01-10,3'000'000.00,-0.05,2'999'999.95,-0,-0.00%\n2024-01-11,2'999'999.95,1.08,3'000'001.03,0,0.00%\n2024-01-12,3'000'001.03,0.48,3'000'001.51,0,0.00%\n2024-01-16,3'000'001.51,4'668.21,3'004'669.72,16,0.16%\n2024-01-17,3'004'669.72,126.28,3'004'796.00,0,0.00%`;
-  console.warn('[loadReturnsCSV] Using inline fallback CSV data.');
+  
   Papa.parse(inlineCsv, {
     header: true,
     skipEmptyLines: true,
@@ -234,9 +232,14 @@ export const calculateDailyVar = (daily, confidenceLevel = 0.95) => {
 };
 
 // Sharpe ratio using global Returns and RF
-export const calculateSharpeRatio = (monthlyReturnsArr = null, sp500ReturnsArr = null, rfReturnsArr = null) => {
-  // Use passed monthlyReturnsArr if available, otherwise calculate
-  if (!monthlyReturnsArr) {
+export const calculateSharpeRatio = (dailyReturnsArr = null, sp500ReturnsArr = null, rfReturnsArr = null) => {
+  // Accept objects with `.returns` (e.g., { dates: [], returns: [] }) or raw arrays
+  if (dailyReturnsArr && typeof dailyReturnsArr === 'object' && Array.isArray(dailyReturnsArr.returns)) {
+    dailyReturnsArr = dailyReturnsArr.returns;
+  }
+
+  // Load Returns if not provided
+  if (!dailyReturnsArr || !Array.isArray(dailyReturnsArr) || dailyReturnsArr.length === 0) {
     if (!Returns.dates.length || !Returns.returns.length) {
       loadCSV(
         dates => Returns.dates = dates,
@@ -245,40 +248,133 @@ export const calculateSharpeRatio = (monthlyReturnsArr = null, sp500ReturnsArr =
       );
       return 'Loading Returns...';
     }
-    monthlyReturnsArr = calculateMonthlyReturns(Returns.dates, Returns.returns);
+    dailyReturnsArr = Returns.returns;
   }
-  let rfAvg;
-  if (rfReturnsArr && rfReturnsArr.length) {
-    rfAvg = rfReturnsArr.reduce((a, b) => a + b, 0) / rfReturnsArr.length / 12;
-  } else {
-    if (!RF.returns.length) {
-      loadCSV(
-        dates => RF.dates = dates,
-        returns => RF.returns = returns,
-        '/RF.csv'
-      );
-      return 'Loading RF...';
+
+  // If caller passed monthly objects [{period, return}], compute Sharpe on monthly series
+  if (dailyReturnsArr && dailyReturnsArr.length && typeof dailyReturnsArr[0] === 'object' && dailyReturnsArr[0].hasOwnProperty('return')) {
+    const monthly = dailyReturnsArr.map(r => Number(r.return)).filter(v => !isNaN(v));
+    if (!monthly.length) return '0';
+    // compute rf monthly average
+    let rfAvg = 0;
+    if (rfReturnsArr) {
+      if (Array.isArray(rfReturnsArr) && rfReturnsArr.length) rfAvg = rfReturnsArr.reduce((a,b)=>a+Number(b||0),0)/rfReturnsArr.length;
+      else if (rfReturnsArr && Array.isArray(rfReturnsArr.returns) && rfReturnsArr.returns.length) rfAvg = rfReturnsArr.returns.reduce((a,b)=>a+Number(b||0),0)/rfReturnsArr.returns.length;
+    } else if (RF && Array.isArray(RF.returns) && RF.returns.length) {
+      rfAvg = RF.returns.reduce((a,b)=>a+Number(b||0),0)/RF.returns.length;
     }
-    rfAvg = RF.returns.reduce((a, b) => a + b, 0) / RF.returns.length / 12;
+    const meanMonthly = monthly.reduce((a,b)=>a+b,0)/monthly.length;
+    const excessReturn = meanMonthly - rfAvg;
+    const varianceMonthly = monthly.reduce((a,b)=>a+Math.pow(b-meanMonthly,2),0)/monthly.length;
+    const stdDevMonthly = Math.sqrt(varianceMonthly);
+    const annualizedExcessReturn = excessReturn * 12;
+    const annualizedStdDev = stdDevMonthly * Math.sqrt(12);
+    const result = (annualizedStdDev === 0 ? 0 : (annualizedExcessReturn / annualizedStdDev)).toFixed(2);
+    return result;
   }
-  const monthly = monthlyReturnsArr.map(r => r.return);
-  if (!monthly.length) return '0';
-  const meanMonthly = monthly.reduce((a, b) => a + b, 0) / monthly.length;
-  const excessReturn = meanMonthly - rfAvg;
-  const varianceMonthly = monthly.reduce((a, b) => a + Math.pow(b - meanMonthly, 2), 0) / monthly.length;
-  const stdDevMonthly = Math.sqrt(varianceMonthly);
-  const annualizedExcessReturn = excessReturn * 12;
-  const annualizedStdDev = stdDevMonthly * Math.sqrt(12);
-  const result = (annualizedStdDev === 0 ? 0 : (annualizedExcessReturn / annualizedStdDev)).toFixed(2);
-  return result;
+
+  // Resolve RF average daily rate (accept array or object)
+  let rfDailyAvg = 0;
+  if (rfReturnsArr) {
+    if (Array.isArray(rfReturnsArr) && rfReturnsArr.length) {
+      rfDailyAvg = rfReturnsArr.reduce((a, b) => a + b, 0) / rfReturnsArr.length;
+    } else if (rfReturnsArr && Array.isArray(rfReturnsArr.returns) && rfReturnsArr.returns.length) {
+      rfDailyAvg = rfReturnsArr.returns.reduce((a, b) => a + b, 0) / rfReturnsArr.returns.length;
+    }
+  }
+
+  // If still no RF data, try the global RF loader
+  if (!rfDailyAvg && (!RF.returns || !RF.returns.length)) {
+    loadCSV(
+      dates => RF.dates = dates,
+      returns => RF.returns = returns,
+      '/RF.csv'
+    );
+    // don't block UI; return loading message
+    return 'Loading RF...';
+  }
+  if (!rfDailyAvg && RF.returns && RF.returns.length) {
+    rfDailyAvg = RF.returns.reduce((a, b) => a + b, 0) / RF.returns.length;
+  }
+
+  // If RF appears to be an annual rate (e.g. ~0.04 for 4%), convert to daily
+  if (rfDailyAvg > 0.01) {
+    console.log('[Sharpe] detected annual RF, converting to daily by dividing by 252. rfDailyAvg(before):', rfDailyAvg);
+    rfDailyAvg = rfDailyAvg / 252;
+    console.log('[Sharpe] rfDailyAvg(after):', rfDailyAvg);
+  }
+
+  // Calculate mean and std on daily returns
+  const clean = dailyReturnsArr.map(Number).filter(v => typeof v === 'number' && !isNaN(v));
+  if (!clean.length) {
+    console.log('[Sharpe] no numeric daily returns found; raw sample:', dailyReturnsArr.slice(0,5));
+    return '0';
+  }
+  const meanDaily = clean.reduce((a, b) => a + b, 0) / clean.length;
+  const varianceDaily = clean.reduce((a, b) => a + Math.pow(b - meanDaily, 2), 0) / clean.length;
+  const stdDevDaily = Math.sqrt(varianceDaily);
+
+  console.log('[Sharpe] dailyCount:', clean.length, 'meanDaily:', meanDaily, 'stdDevDaily:', stdDevDaily, 'rfDailyAvg:', rfDailyAvg);
+
+  // Excess return and annualization (252 trading days)
+  const excessDaily = meanDaily - (rfDailyAvg || 0);
+  const annualizedExcess = excessDaily * 252;
+  const annualizedStd = stdDevDaily * Math.sqrt(252);
+
+  if (annualizedStd === 0) {
+    console.log('[Sharpe] annualized standard deviation is zero — cannot compute Sharpe. annualizedStd, annualizedExcess:', annualizedStd, annualizedExcess);
+  }
+  const ratio = (annualizedStd === 0 ? 0 : (annualizedExcess / annualizedStd));
+  const out = ratio.toFixed(2);
+  console.log('[Sharpe] result:', out);
+  return out;
 };
 
 // Helper to export Sharpe ratio for Trading.jsx
-export const getSharpeRatioWithRF = (monthlyReturns, rfReturns) => {
-  // monthlyReturns: array of { period, return }
-  // rfReturns: array of numbers (monthly risk-free rates)
-  const monthly = monthlyReturns.map(r => r.return);
-  return calculateSharpeRatio(monthly, rfReturns);
+export const getSharpeRatioWithRF = (dailyReturns, rfReturns) => {
+  // Accept objects with `.returns`
+  if (dailyReturns && typeof dailyReturns === 'object' && Array.isArray(dailyReturns.returns)) {
+    dailyReturns = dailyReturns.returns;
+  }
+  if (!dailyReturns || !Array.isArray(dailyReturns) || dailyReturns.length === 0) {
+    if (!Returns.returns.length) {
+      loadCSV(
+        dates => Returns.dates = dates,
+        returns => Returns.returns = returns,
+        '/Returns.csv'
+      );
+      return 'Loading Returns...';
+    }
+    dailyReturns = Returns.returns;
+  }
+
+  // Normalize rf input into a single daily average value
+  const toDailyRF = (arr) => {
+    const clean = (arr || []).map(Number).filter(v => typeof v === 'number' && !isNaN(v));
+    if (!clean.length) return 0;
+    const mean = clean.reduce((a,b)=>a+b,0)/clean.length;
+    // Heuristics:
+    // - if RF series length matches daily series or is long (>=200), assume it's already daily
+    if (clean.length === dailyReturns.length || clean.length >= 200) return mean;
+    // - if values look like small decimals (<=0.1), treat as annual decimals and convert to daily
+    if (mean <= 0.1) return mean / 252;
+    // - otherwise treat as percentage (e.g. 2.5 -> 2.5%) then convert to decimal annual and to daily
+    return (mean / 100) / 252;
+  };
+
+  let rfDailyAvg = 0;
+  if (rfReturns) {
+    if (Array.isArray(rfReturns)) rfDailyAvg = toDailyRF(rfReturns);
+    else if (rfReturns && Array.isArray(rfReturns.returns)) rfDailyAvg = toDailyRF(rfReturns.returns);
+  }
+  if (!rfDailyAvg && RF && Array.isArray(RF.returns) && RF.returns.length) {
+    rfDailyAvg = toDailyRF(RF.returns);
+  }
+
+  
+
+  // Pass daily returns and RF as array containing daily avg to calculateSharpeRatio
+  return calculateSharpeRatio(dailyReturns, null, [rfDailyAvg]);
 };
 
 export const calculateMonthlyReturns = (dates, dailyReturns) => {

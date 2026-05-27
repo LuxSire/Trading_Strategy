@@ -44,13 +44,6 @@ const Trading = () => {
         `${import.meta.env.BASE_URL}SP500.csv`
     );
   }, []);
-
-  // Debug: Log loaded datasets
-  useEffect(() => {
-    console.log('Returns:', returnsData);
-    console.log('RF:', rfData);
-    console.log('SP500:', sp500Data);
-  }, [returnsData, rfData, sp500Data]);
   // State hooks
   const [performanceData, setPerformanceData] = useState([]);
   const [dailyReturns, setDailyReturns] = useState([]);
@@ -77,19 +70,16 @@ const Trading = () => {
   }, [returnsData]);
 
   useEffect(() => {
-    console.log('[effect dates/dailyReturns] Triggered. dates.length =', dates.length, 'dailyReturns.length =', dailyReturns.length);
     if (!dates.length || !dailyReturns.length) {
-      if (!dates.length) console.log('[effect dates/dailyReturns] dates array still empty');
-      if (!dailyReturns.length) console.log('[effect dates/dailyReturns] dailyReturns array still empty');
+      if (!dates.length) {}
+      if (!dailyReturns.length) {}
       return;
     }
-    console.log('[effect dates/dailyReturns] Sample dates:', dates.slice(0,5));
-    console.log('[effect dates/dailyReturns] Sample dailyReturns:', dailyReturns.slice(0,5));
-    console.log('[effect dates/dailyReturns] Daily Returns (full):', dailyReturns);
+    
     
     // Calculate monthly returns
     const monthly = calculateMonthlyReturns(dates, dailyReturns);
-    console.log('[effect dates/dailyReturns] Calculated monthly returns:', monthly);
+    
     setMonthlyReturns(monthly);
     
     // Calculate cumulative returns
@@ -98,16 +88,13 @@ const Trading = () => {
       cumulative *= (1 + dailyReturn );
       return ((cumulative - 1) ); // Convert back to percentage
     });
-    console.log('[effect dates/dailyReturns] Calculated cumulative returns:', cumulativeArray.slice(0,5));
+    
     setCumulativeReturns(cumulativeArray);
   }, [dates, dailyReturns]);
 
   useEffect(() => {
-    console.log('[effect monthlyReturns] Triggered. monthlyReturns.length =', monthlyReturns.length);
     if (!monthlyReturns.length) return;
-    console.log('[effect monthlyReturns] monthlyReturns:', monthlyReturns);
     const tableData = formatTableData(monthlyReturns);
-    console.log('[effect monthlyReturns] Formatted performance table data:', tableData);
     setPerformanceData(tableData);
 
     // Calculate best and worst months
@@ -142,12 +129,12 @@ const Trading = () => {
       perfAnnualized,
       inceptionDate: fundStats.inceptionDate || 'Sep. 1st, 2026'
     };
-    console.log('[effect monthlyReturns] Computed fund stats:', stats);
+    
     setFundStats(stats);
   }, [monthlyReturns, dailyReturns]);
 
   // Calculate Sharpe, Sortino, and Correlation to S&P using monthlyReturns
-  const sharpeRatio = calculateSharpeRatio(monthlyReturns,sp500Data,rfData);
+  const sharpeRatio = calculateSharpeRatio(dailyReturns,sp500Data,rfData);
   const sortinoRatio = calculateSortinoRatio(dailyReturns);
   const correlationSP500 = calculateCorrelation(dailyReturns, sp500Data.returns);
   
@@ -271,7 +258,7 @@ const Trading = () => {
               </tr>
             </thead>
             <tbody>
-              {console.log('[render] performanceData length:', performanceData.length, 'sample:', performanceData.slice(0,2))}
+              {null}
               {performanceData.map((row, index) => (
                 <tr key={index}>
                   <td className="year-cell">{row.year}</td>
