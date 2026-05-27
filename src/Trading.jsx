@@ -167,8 +167,8 @@ const Trading = () => {
       Our expertise ranges from multi-platform development through data integration 
       to data analytics. 
       From time to time, we make money for ourselves using our strategies, particularly "SEESAW": 
-      a systematic and diversified long single stock short-term momentum sell offs vs indices. 
-      500 stocks monitored and traded with a 48 hour maximum trade horizon. 
+      a systematic long/short single stock MT vs ST momentum strategy. 
+      700 stocks monitored and traded with a 24 hour maximum trade horizon. 
     </p>
   </div>
 </div>
